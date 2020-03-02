@@ -1,0 +1,36 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.date-main {
+  display: flex;
+  padding: 20px 5px 20px 5px;
+}
+
+.date-header {
+  min-width: 300px;
+}
+
+.date-row {
+  display: flex;
+  /* justify-content: center;*/
+  align-items: center;
+  min-height: 40px;
+  max-height: 40px;
+}
+
+.date-items {
+  display: flex;
+}
+
+.date-content {
+  overflow: auto;
+}
+
+.date-block {
+  text-align: center;
+  border: 1px solid #efefef;
+  margin: 0 5px 0 0;
+  padding: 5px 15px;
+}
