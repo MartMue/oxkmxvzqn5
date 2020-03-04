@@ -1,6 +1,8 @@
 import {
   endOfMonth,
   endOfYear,
+  startOfDay,
+  startOfWeek,
   format,
   isWithinInterval,
   eachDayOfInterval,
@@ -10,7 +12,9 @@ import {
   addDays,
   endOfWeek,
   isWeekend,
-  endOfDay
+  endOfDay,
+  addMonths,
+  startOfMonth
 } from "date-fns";
 
 const currentYear = new Date().getFullYear();
@@ -27,7 +31,7 @@ const getYearSlices = interval => {
   });
 };
 
-const getMonthSlices = interval => {
+const getMonthSlicesByYear = interval => {
   const years = getYearSlices(interval);
   return years
     .map(year => {
@@ -42,6 +46,21 @@ const getMonthSlices = interval => {
       });
     })
     .flat();
+};
+
+const getMonthSlices = interval => {
+  const months = eachMonthOfInterval(interval);
+  let container = "";
+  return months.map(month => {
+    const current = format(month, "yyyy");
+    return {
+      container: container != current ? (container = current) : null,
+      label: format(month, "MMM"),
+      level: LevelType.MONTH,
+      start: month,
+      end: endOfMonth(month)
+    };
+  });
 };
 
 const getWeekSlicesByYear = interval => {
@@ -65,15 +84,14 @@ const getWeekSlices = interval => {
   const weeks = eachWeekOfInterval(interval);
   let container = "";
   return weeks.map(week => {
-    const current = format(week, "yyyy");
+    const current = format(week, "MMM yy");
     const item = {
-      container: container != current ? current : null,
+      container: container != current ? (container = current) : null,
       label: format(week, "I"),
       level: LevelType.WEEK,
       start: week,
       end: endOfWeek(week)
     };
-    if (container !== current) container = current;
     return item;
   });
 };
@@ -82,16 +100,15 @@ const getDaySlices = interval => {
   const days = eachDayOfInterval(interval);
   let container = "";
   return days.map(day => {
-    const current = format(day, "MMM");
+    const current = format(day, "MMM yy");
     const item = {
-      container: container != current ? current : null,
+      container: container != current ? (container = current) : null,
       label: format(day, "dd"),
       level: LevelType.DAY,
       start: day,
       end: endOfDay(day),
       isBlocked: isWeekend(day)
     };
-    if (container !== current) container = current;
     return item;
   });
 };
@@ -118,11 +135,48 @@ const interval = {
   end: new Date(currentYear + 3, 11, 31)
 };
 
-const LevelType = {
+export const LevelType = {
   DAY: 0,
   WEEK: 1,
   MONTH: 2,
   YEAR: 3
+};
+
+export const getIntervalSize = (level, intervalSize) => {
+  switch (level) {
+    case LevelType.DAY:
+      return 10 * intervalSize;
+    case LevelType.WEEK:
+      return 30 * intervalSize;
+    case LevelType.Month:
+      5;
+      return 4 * intervalSize;
+    default:
+      return 1 * intervalSize;
+  }
+};
+
+export const getDateColumns = (date, level, intervalSize) => {
+  const size = getIntervalSize(level, intervalSize);
+  switch (level) {
+    case LevelType.DAY:
+      return getDaySlices({
+        start: addDays(date, -size),
+        end: addDays(date, size)
+      });
+    case LevelType.WEEK:
+      return getWeekSlices({
+        start: startOfWeek(addDays(date, -size)),
+        end: endOfWeek(addDays(date, size))
+      });
+    case LevelType.MONTH:
+      return getMonthSlices({
+        start: startOfMonth(addMonths(date, -size)),
+        end: endOfMonth(addMonths(date, size))
+      });
+    default:
+      return [];
+  }
 };
 
 // const days = eachDayOfInterval(interval);

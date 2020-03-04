@@ -1,91 +1,102 @@
-import React, { useRef } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
-import { format, addDays } from "date-fns";
+import { format, addDays, isWithinInterval } from "date-fns";
 
+import c from "classnames";
+
+import { LevelType, getDateColumns } from "./dateHierarchy";
 import "./styles.css";
-import DateBox from "./DateBox";
-import useIntersect from "./useIntersect";
-
-const dateColumns = [];
-
-let date = new Date(2020, 0, 1);
-const end = date.getFullYear() + 1;
-console.log(date);
-const toIndex = date =>
-  date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
-
-while (date.getFullYear() < end) {
-  dateColumns.push({
-    index: toIndex(date),
-    date: date,
-    label: format(date, "dd.MM.yyyy")
-  });
-  date = addDays(date, 1);
-}
-
-console.log("hello");
-
-const generateRow = date => {
-  const id = toIndex(date);
-  return {
-    id: `item-${id}`,
-    label: `${format(date, "dd.MM.yyy")}`,
-    index: id
-  };
-};
-
-const refs = dateColumns.reduce((acc, item) => {
-  acc[item.index] = React.createRef();
-  return acc;
-}, {});
-
-const handleClick = index => {
-  refs[index].current.scrollIntoView({
-    behavior: "smooth",
-    inline: "center"
-  });
-};
-
-const onChange = isVisible => {
-  console.log(isVisible);
-};
 
 const rows = [
   new Date(2020, 2, 15),
   new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 3, 30)
-].map(date => generateRow(date));
-
-const testIndex = 20200315;
+  new Date(2020, 0, 1),
+  new Date(2020, 5, 22),
+  new Date(2020, 1, 25),
+  new Date(2020, 2, 24)
+].map((date, index) => ({
+  label: `Aufgabe ${("0" + index).slice(-2)}`,
+  date
+}));
 
 const App = () => {
+  const [state, setState] = useState({
+    index: new Date(),
+    intervalSize: 1,
+    level: LevelType.DAY
+  });
+
+  const handleClick = date => {
+    setState({
+      ...state,
+      index: date
+    });
+  };
+
+  const dateColumns = getDateColumns(
+    state.index,
+    state.level,
+    state.intervalSize
+  );
+
   return (
     <div className="date-main">
       <div className="date-header">
-        <div className="date-row">
+        <div className="date-row date-menu">
           <div className="date-header">
-            <span>2020</span>
+            <button
+              onClick={() =>
+                setState({
+                  ...state,
+                  level:
+                    state.level === LevelType.DAY
+                      ? LevelType.WEEK
+                      : LevelType.WEEK
+                      ? LevelType.MONTH
+                      : LevelType.MONTH
+                })
+              }
+            >
+              UP
+            </button>
+            <button
+              onClick={() =>
+                setState({
+                  ...state,
+                  level:
+                    state.level === LevelType.MONTH
+                      ? LevelType.WEEK
+                      : LevelType.WEEK
+                      ? LevelType.DAY
+                      : LevelType.DAY
+                })
+              }
+            >
+              DOWN
+            </button>
+            <button
+              onClick={() =>
+                setState({ ...state, intervalSize: state.intervalSize + 1 })
+              }
+            >
+              INC
+            </button>
+            <button
+              onClick={() => {
+                if (state.intervalSize === 1) return;
+                setState({ ...state, intervalSize: state.intervalSize - 1 });
+              }}
+            >
+              DEC
+            </button>
           </div>
         </div>
         {rows.map(row => {
           return (
             <div className="date-row">
               <div className="date-header">
-                <button onClick={() => handleClick(row.index)}>
-                  Scroll to {row.label}
+                <button onClick={() => handleClick(row.date)}>
+                  {`${row.label} (${format(row.date, "dd.MM.yyy")}) `}
                 </button>
               </div>
             </div>
@@ -96,9 +107,14 @@ const App = () => {
         <div className="date-row">
           <div className="date-items">
             {dateColumns.map(item => (
-              <div ref={refs[item.index]} className="date-block">
-                {item.label}
-              </div>
+              <div className="date-block">{item.container}</div>
+            ))}
+          </div>
+        </div>
+        <div className="date-row">
+          <div className="date-items">
+            {dateColumns.map(item => (
+              <div className="date-block">{item.label}</div>
             ))}
           </div>
         </div>
@@ -106,7 +122,14 @@ const App = () => {
           <div className="date-row">
             <div className="date-items">
               {dateColumns.map(item => (
-                <div className="date-block">{item.label}</div>
+                <div
+                  className={c("date-block", {
+                    "date-block-active": isWithinInterval(row.date, item)
+                  })}
+                  row
+                >
+                  {item.label}
+                </div>
               ))}
             </div>
           </div>

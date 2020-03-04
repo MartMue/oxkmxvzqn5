@@ -46,9 +46,20 @@
   overflow: auto;
 }
 
+.date-menu {
+  height: 80px;
+  min-height: 80px;
+  max-height: 80px;
+}
+
 .date-block {
   text-align: center;
   border: 1px solid #efefef;
   margin: 0 5px 0 0;
   padding: 5px 15px;
+  width: 30px;
+}
+
+.date-block-active {
+  background-color: dodgerblue;
 }
