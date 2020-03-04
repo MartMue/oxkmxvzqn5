@@ -3,6 +3,24 @@
   text-align: center;
 }
 
+.kdo-container {
+  display: flex;
+  height: 600px;
+}
+
+.kdo-page {
+  width: 200px;
+  background-color: dodgerblue;
+}
+
+.kdo-page:hover {
+  filter: brightness(1.1);
+}
+
+.kdo-content {
+  width: 600px;
+}
+
 .date-main {
   display: flex;
   padding: 20px 5px 20px 5px;

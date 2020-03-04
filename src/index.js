@@ -1,118 +1,67 @@
-import React, { useRef } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
-import { format, addDays } from "date-fns";
+import App from "./App";
+import c from "classnames";
 
 import "./styles.css";
-import DateBox from "./DateBox";
-import useIntersect from "./useIntersect";
+import "./dateHierarchy";
 
-const dateColumns = [];
+// function Timeout(fn, interval) {
+//   var id = setTimeout(fn, interval);
+//   this.cleared = false;
+//   this.clear = function () {
+//       this.cleared = true;
+//       clearTimeout(id);
+//   };
+// }
 
-let date = new Date(2020, 0, 1);
-const end = date.getFullYear() + 1;
-console.log(date);
-const toIndex = date =>
-  date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
-
-while (date.getFullYear() < end) {
-  dateColumns.push({
-    index: toIndex(date),
-    date: date,
-    label: format(date, "dd.MM.yyyy")
-  });
-  date = addDays(date, 1);
-}
-
-const generateRow = date => {
-  const id = toIndex(date);
-  return {
-    id: `item-${id}`,
-    label: `${format(date, "dd.MM.yyy")}`,
-    index: id
+const Test = () => {
+  const data = {
+    1: {
+      label: "foo"
+    },
+    2: {
+      label: "bar"
+    }
   };
-};
 
-const refs = dateColumns.reduce((acc, item) => {
-  acc[item.index] = React.createRef();
-  return acc;
-}, {});
+  const [activeData, setActiveData] = useState(1);
+  const [timeoutRef, setTimeoutRef] = useState(null);
 
-const handleClick = index => {
-  refs[index].current.scrollIntoView({
-    behavior: "smooth",
-    inline: "center"
-  });
-};
+  const onMouseEnter = () => {
+    if (timeoutRef == null) {
+      setTimeoutRef(
+        setTimeout(() => {
+          setActiveData(activeData === 1 ? 2 : 1);
+        }, 2000)
+      );
+    }
+  };
 
-const onChange = isVisible => {
-  console.log(isVisible);
-};
+  const onMouseLeave = () => {
+    clearTimeout(timeoutRef);
+    setTimeoutRef(null);
+  };
 
-const rows = [
-  new Date(2020, 2, 15),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 1, 29),
-  new Date(2020, 3, 1),
-  new Date(2020, 3, 30)
-].map(date => generateRow(date));
-
-const testIndex = 20200315;
-
-const App = () => {
   return (
-    <div className="date-main">
-      <div className="date-header">
-        <div className="date-row">
-          <div className="date-header">
-            <span>2020</span>
-          </div>
-        </div>
-        {rows.map(row => {
-          return (
-            <div className="date-row">
-              <div className="date-header">
-                <button onClick={() => handleClick(row.index)}>
-                  Scroll to {row.label}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+    <div className={c("kdo-container")}>
+      <div
+        className={c("kdo-page")}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
+      <div className={c("kdo-content")}>
+        {data[activeData].label}
+        {}
       </div>
-      <div className="date-content">
-        <div className="date-row">
-          <div className="date-items">
-            {dateColumns.map(item => (
-              <div ref={refs[item.index]} className="date-block">
-                {item.label}
-              </div>
-            ))}
-          </div>
-        </div>
-        {rows.map(row => (
-          <div className="date-row">
-            <div className="date-items">
-              {dateColumns.map(item => (
-                <div className="date-block">{item.label}</div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      <div
+        className={c("kdo-page")}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
     </div>
   );
 };
 
 const rootElement = document.getElementById("root");
-ReactDOM.render(<App />, rootElement);
+ReactDOM.render(<Test />, rootElement);
